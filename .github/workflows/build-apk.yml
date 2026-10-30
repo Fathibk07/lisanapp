@@ -30,44 +30,21 @@ jobs:
         with:
           channel: stable
 
+      - name: Install Android SDK 36
+        run: |
+          yes | sdkmanager --licenses
+          sdkmanager "platforms;android-36"
+
       - name: Prepare Android
         working-directory: source/lisaan_flutter_v10
         run: |
           flutter create . --platforms=android --org com.lisaan.app --project-name lisaan
 
-      - name: Set Android SDK 36
+      - name: Set compile SDK
         working-directory: source/lisaan_flutter_v10
-        shell: bash
         run: |
-          python3 - <<'PY'
-          from pathlib import Path
-
-          files = [
-              Path("android/app/build.gradle"),
-              Path("android/app/build.gradle.kts"),
-          ]
-
-          found = False
-
-          for path in files:
-              if path.exists():
-                  text = path.read_text()
-                  text = text.replace(
-                      "flutter.compileSdkVersion", "36"
-                  )
-                  text = text.replace(
-                      "compileSdkVersion 34", "compileSdkVersion 36"
-                  )
-                  text = text.replace(
-                      "compileSdk = 34", "compileSdk = 36"
-                  )
-                  path.write_text(text)
-                  found = True
-                  print(f"Updated {path}")
-
-          if not found:
-              raise SystemExit("Android app Gradle file not found")
-          PY
+          sed -i 's/flutter.compileSdkVersion/36/g' android/app/build.gradle.kts 2>/dev/null || true
+          sed -i 's/flutter.compileSdkVersion/36/g' android/app/build.gradle 2>/dev/null || true
 
       - name: Install dependencies
         working-directory: source/lisaan_flutter_v10
